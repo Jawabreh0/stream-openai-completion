@@ -1,16 +1,46 @@
 const OpenAI = require("openai");
+const readline = require("readline");
 
 const openai = new OpenAI();
 
-async function main() {
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+const messages = [];
+
+async function chatCompletion(userInput) {
+  messages.push({ role: "user", content: userInput });
+
   const stream = await openai.chat.completions.create({
     model: "gpt-3.5-turbo",
-    messages: [{ role: "user", content: "write me a long story" }],
+    messages: messages,
     stream: true,
   });
+
+  let assistantResponse = "";
+
   for await (const chunk of stream) {
-    process.stdout.write(chunk.choices[0]?.delta?.content || "");
+    const content = chunk.choices[0]?.delta?.content || "";
+    assistantResponse += content;
+    process.stdout.write(content);
   }
+
+  messages.push({ role: "assistant", content: assistantResponse });
+  console.log("\n");
+  askQuestion();
 }
 
-main();
+function askQuestion() {
+  rl.question("You: ", (userInput) => {
+    if (userInput.toLowerCase() === "exit") {
+      rl.close();
+      return;
+    }
+    chatCompletion(userInput);
+  });
+}
+
+console.log("Start chatting (type 'exit' to end the conversation):");
+askQuestion();
