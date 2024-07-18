@@ -8,7 +8,7 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-const messages = [];
+let messages = [];
 
 async function chatCompletion(userInput) {
   messages.push({ role: "user", content: userInput });
@@ -28,6 +28,7 @@ async function chatCompletion(userInput) {
   }
 
   messages.push({ role: "assistant", content: assistantResponse });
+
   console.log("\n");
   askQuestion();
 }
